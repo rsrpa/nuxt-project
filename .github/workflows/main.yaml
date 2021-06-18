@@ -1,0 +1,168 @@
+name: Deploy web-www
+on:
+  push:
+    branches:
+      - main
+jobs:
+  version:
+    name: 'SemVer Creation'
+    runs-on: ubuntu-18.04
+    outputs:
+      new_tag: ${{ steps.version.outputs.new_tag }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Bump version and push tag
+        id: version
+        uses: mathieudutour/github-tag-action@v4.5
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          dry_run: true # We don't want to tag. We only want to compute the value
+
+  build-and-deploy-dev:
+    name: 'Build && Deploy Dev'
+    # As we're building static files, and not server-side rendering,
+    # we will need to rebuild for each environment we deploy into.
+    runs-on: ubuntu-18.04
+    needs:
+      - version
+    env:
+      VERSION: ${{ needs.version.outputs.new_tag }}
+      ENV_FILE: .env.dev
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '12'
+
+      - uses: chrnorm/deployment-action@releases/v1
+        name: Create GitHub deployment
+        id: deployment
+        with:
+          token: '${{ github.token }}'
+          environment: dev
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_KEY_ID_WEB_PROD }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY_WEB_PROD }}
+          aws-region: eu-west-1
+
+      - name: Setup .npmrc
+        run: printf 'registry=https://npm.pkg.github.com/mind-gym\n//npm.pkg.github.com/:_authToken=%s\n' "$GH_READ_PACKAGES_TOKEN" >.npmrc
+        env:
+          GH_READ_PACKAGES_TOKEN: ${{ secrets.GH_READ_PACKAGES_TOKEN }}
+
+      - name: 'cdn-deploy'
+        run: |
+          make cdn-deploy
+
+      - name: 'Cloudfront invalidation'
+        run: |
+          aws cloudfront create-invalidation \
+          --distribution-id E1SDL7G44XHOZ9 \
+          --paths "/*" || echo "Failed to start the cache invalidation"
+
+      - name: 'storybook-deploy'
+        run: |
+          make storybook-deploy
+
+      - name: Update deployment status (success)
+        if: success()
+        uses: chrnorm/deployment-status@releases/v1
+        with:
+          token: '${{ github.token }}'
+          state: 'success'
+          deployment_id: ${{ steps.deployment.outputs.deployment_id }}
+
+      - name: Update deployment status (failure)
+        if: failure()
+        uses: chrnorm/deployment-status@releases/v1
+        with:
+          token: '${{ github.token }}'
+          state: 'failure'
+          deployment_id: ${{ steps.deployment.outputs.deployment_id }}
+
+  #Push git tag
+  push-tag:
+    runs-on: ubuntu-18.04
+    needs:
+      - build-and-deploy-dev
+    steps:
+      - uses: actions/checkout@v2
+      - name: Push tag
+        id: version
+        uses: mathieudutour/github-tag-action@v4.5
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  # build-and-deploy-prod:
+  #   name: 'Build && Deploy Prod'
+  #   # As we're building static files, and not server-side rendering,
+  #   # we will need to rebuild for each environment we deploy into.
+  #   runs-on: ubuntu-18.04
+  #   if: "!contains(github.event.head_commit.message, 'skip prod')"
+  #   needs:
+  #     - version
+  #     - push-tag
+  #     - build-and-deploy-dev
+  #   env:
+  #     VERSION: ${{ needs.version.outputs.new_tag }}
+  #     ENV_FILE: .env.prod
+  #     ENV: prod
+  #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+
+  #     - uses: actions/setup-node@v1
+  #       with:
+  #         node-version: '12'
+
+  #     - uses: chrnorm/deployment-action@releases/v1
+  #       name: Create GitHub deployment
+  #       id: deployment
+  #       with:
+  #         token: '${{ github.token }}'
+  #         environment: prod
+
+  #     - name: Configure AWS Credentials
+  #       uses: aws-actions/configure-aws-credentials@v1
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_KEY_ID_PROD }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY_PROD }}
+  #         aws-region: eu-west-1
+
+  #     - name: Setup .npmrc
+  #       run: printf 'registry=https://npm.pkg.github.com/mind-gym\n//npm.pkg.github.com/:_authToken=%s\n' "$GH_READ_PACKAGES_TOKEN" >.npmrc
+  #       env:
+  #         GH_READ_PACKAGES_TOKEN: ${{ secrets.GH_READ_PACKAGES_TOKEN }}
+
+  #     - name: 'cdn-deploy'
+  #       run: |
+  #         make cdn-deploy
+
+  #     - name: 'Cloudfront invalidation'
+  #       run: |
+  #         aws cloudfront create-invalidation \
+  #         --distribution-id EQZCKRSN5638Q \
+  #         --paths "/*" || echo "Failed to start the cache invalidation"
+
+  #     - name: Update deployment status (success)
+  #       if: success()
+  #       uses: chrnorm/deployment-status@releases/v1
+  #       with:
+  #         token: '${{ github.token }}'
+  #         state: 'success'
+  #         deployment_id: ${{ steps.deployment.outputs.deployment_id }}
+
+  #     - name: Update deployment status (failure)
+  #       if: failure()
+  #       uses: chrnorm/deployment-status@releases/v1
+  #       with:
+  #         token: '${{ github.token }}'
+  #         state: 'failure'
+  #         deployment_id: ${{ steps.deployment.outputs.deployment_id }}

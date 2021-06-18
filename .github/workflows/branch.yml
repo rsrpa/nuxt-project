@@ -1,0 +1,51 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: NPM CI
+
+on:
+  push:
+    branches:
+      - '*' # matches every branch
+      - '*/*' # matches every branch containing a single '/'
+      - '!main'
+
+jobs:
+  unit-tests:
+    name: 'Unit tests'
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      # Install NPM dependencies, cache them correctly
+      # and run all Cypress tests
+      - name: Setup .npmrc
+        run: printf 'registry=https://npm.pkg.github.com/mind-gym\n//npm.pkg.github.com/:_authToken=%s\n' "$GH_READ_PACKAGES_TOKEN" >.npmrc
+        env:
+          GH_READ_PACKAGES_TOKEN: ${{ secrets.GH_READ_PACKAGES_TOKEN }}
+      - run: if npm install ; then true ; else tail -n 30 /home/runner/.npm/_logs/* ; false ; fi
+
+      - name: 'Unit tests'
+        run: |
+          npm run test
+
+      - name: 'Linting'
+        run: |
+          npm run lint
+
+      - name: 'build nuxt'
+        run: |
+          npm run build
+
+
+  Yamllint:
+    name: 'Yaml lint'
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: 'Install && run yamllint'
+        run: |
+          sudo apt-get install -y yamllint
+          yamllint -c .yamllint .github/workflows

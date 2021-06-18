@@ -1,0 +1,95 @@
+@import '../tools/index';
+
+/*  =======================
+    Colors 
+    ======================= */
+    $core-green: #00E200;
+    $core-black: #121212;
+    $core-white: #FFFFFF;
+    $core-bone: #F5F5EF;
+
+    $bone-50: #FBFBF9;
+    $bone-200: #E9E9E2;
+
+    $black-200: #D0D0D6;
+    $black-300: #9E9EA8;
+    $black-400: #82828C;
+    $black-500: #696973;
+    $black-600: #43434A;
+    $black-700: #212427;
+    
+    $green-400: #44FB44; // Button rollover
+    $green-700: #008300; // Links & pull quotes
+
+    $teal-500: #00E3B8; // Focus state
+    $teal-600: #00A088;
+    $teal-700: #007262;
+
+    $blue-400: #0093FF;
+    $blue-600: #0053AE;
+
+    $purple-400: #D740FF;
+    $purple-700: #6C00A0;
+
+    $orange-600: #FF8700;
+    $orange-800: #E30000;
+
+    $red-500: #FF0064;
+    $red-600: #D7003C; // Errors
+    
+/*  =======================
+    Breakpoints 
+    ======================= */
+    $grid-breakpoints: (
+        xs: 360px,
+        sm: 768px,
+        md: 1024px,
+        lg: 1440px
+    );
+
+    $grid-gutter-width-xs: 28px;
+    $grid-gutter-width-sm: 28px;
+    $grid-gutter-width-md: 32px;
+    $grid-gutter-width-lg: 40px;
+
+    $grid-columns: 12;
+    $grid-columns-xs: 6;
+
+    $grid-max-width: 1668px;
+    $screen-max-width: 1920px;
+
+    $spacing-default: 4px;
+    
+/*  =======================
+    Fonts 
+    ======================= */
+    $font-family-primary: 'aktiv-grotesk', sans-serif;
+    $font-family-secondary: 'Merriweather', serif;
+
+    $font-size-base: 16px;
+
+    $font-weight-light: 300;
+    $font-weight-regular: 400;
+    $font-weight-medium: 500;
+
+/*  =======================
+    Borders 
+    ======================= */
+    $border-radius-sm: 12px;
+    $border-radius-md: 16px;
+    $border-radius-lg: 20px;
+    $border-radius-full: 999px;
+
+    $border-width-normal: 1px;
+
+/*  =======================
+    Z-index 
+    ======================= */
+    $z-index-auto: auto;
+    $z-index-negative: -1;
+    $z-index-0: 0;
+    $z-index-1: 100;
+    $z-index-2: 200;
+    $z-index-3: 300;
+    $z-index-4: 400;
+    $z-index-max: 1000;

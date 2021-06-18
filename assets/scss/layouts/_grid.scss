@@ -1,0 +1,58 @@
+.section {
+    position: relative;
+    background-color: $core-bone;
+    padding-bottom: 64px;
+    padding-top: 64px;
+
+    &--pt-0 {
+        // TODO: Move this to a generic class when the design needs are more clear
+        padding-top: 0;
+    }
+
+    &--pv-0 {
+        // TODO: Move this to a generic class when the design needs are more clear
+        padding: 0;
+    }
+ }
+
+.container {
+    margin-right: auto;
+    margin-left: auto;
+    width: 100%;
+    max-width: $grid-max-width;
+    padding-right: 20px;
+    padding-left: 20px;
+
+    @include breakpoint-min(sm) {
+        padding-right: 38px;
+        padding-left: 38px;
+    }
+
+    @include breakpoint-min(md) {
+        padding-right: 60px;
+        padding-left: 60px;
+    }
+
+    @include breakpoint-min(lg) {
+        padding-right: 80px;
+        padding-left: 80px;
+    }
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    column-gap: $grid-gutter-width-xs;
+
+    @include breakpoint-min(sm) {
+        column-gap: $grid-gutter-width-sm;
+    }
+
+    @include breakpoint-min(md) {
+        column-gap: $grid-gutter-width-md;
+    }
+
+    @include breakpoint-min(lg) {
+        column-gap: $grid-gutter-width-lg;
+    }
+}

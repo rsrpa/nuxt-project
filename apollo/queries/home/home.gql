@@ -1,0 +1,19 @@
+query Home {
+  home {
+    seo {
+      title
+      description
+    }
+    hero {
+      title
+      subtitle
+      button {
+        label
+        path
+      }
+      image {
+       url
+      }
+    }
+  }
+}

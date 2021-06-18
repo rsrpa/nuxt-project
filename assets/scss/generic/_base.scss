@@ -1,0 +1,39 @@
+html {
+    font-size: 100%;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    font-family: $font-family-primary;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: $bone-50;
+    @include font-size(18px);
+    line-height: 28px;
+
+    @include breakpoint-min(md) {
+        @include font-size(20px);
+        line-height: 32px;
+    }
+
+    @include breakpoint-min(lg) {
+        @include font-size(24px);
+        line-height: 36px;
+    }
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: inherit;
+    margin: 0;
+}
